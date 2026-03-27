@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>工程坡计算器</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16.png">
+    <meta name="theme-color" content="#e8eaed">
+    <style>
+        :root {
+            --primary-green: #00c853;
+            --primary-dark: #009624;
+            --primary-red: #ff5252;
+            --bg-page: #f2f4f6;
+            --bg-card: #ffffff;
+            --border-color: #e0e0e0;
+            --text-main: #333333;
+            --text-sub: #888888;
+            --radius: 12px;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --unit-color: #555555;
+            --denim-light: #4d74b3;
+            --denim-dark: #34495e;
+            --field-box-bg: #f1f3f5;
+            --field-box-border: #dcdfe5;
+            --denim-bg-alpha: rgba(74, 101, 114, 0.2);
+            --btn-save-bg: linear-gradient(135deg, #2196f3, #0d47a1);
+            --btn-save-bg-active: #0d47a1;
+            --btn-export-bg: linear-gradient(135deg, #ff9800, #f57c00);
+            --btn-export-bg-active: #f57c00;
+            --btn-reexport-bg: linear-gradient(135deg, #ffb74d, #ffa726);
+            --btn-reexport-bg-active: #ffa726;
+            --btn-reexport-text: #000000;
+            --icon-orange: #FF7F00;
+            --icon-black: #000000;
+            --icon-red: #ff0000;
+            --icon-gray: #888888;
+            --icon-blue: #0000ff;
+            --icon-light-gray: #d0d0d0;
+            --button-click-bg: #1e88e5;
+            --button-default-bg: white;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+        html { -webkit-text-size-adjust: 100%; background: linear-gradient(to bottom, #e8eaed 0%, #f2f4f6 40px, #ffffff 60px); overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif; margin: 0; padding: 0; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); background-color: var(--bg-page); color: var(--text-main); height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; touch-action: manipulation; border-radius: env(safe-area-inset-top, 0px) env(safe-area-inset-top, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-bottom, 0px); }
+
+        /* 头部导航 */
+        .header { background-color: transparent; height: 50px; display: flex; align-items: center; justify-content: center; padding: 0 10px; padding-left: calc(10px + env(safe-area-inset-left, 0px)); padding-right: calc(10px + env(safe-area-inset-right, 0px)); z-index: 20; flex-shrink: 0; position: relative; contain: layout style; }
+        .title-container { display: flex; align-items: center; justify-content: center; flex-grow: 1; margin: 0 60px; position: relative; }
+        .header-icon-box { width: 24px; height: 24px; margin-right: 4px; flex-shrink: 0; display: none; }
+        .header-icon-box.visible { display: block; }
+        .page-title { font-size: 16px; font-weight: 700; color: #1a1f26; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; contain: layout; }
+        #btnMoreCalculations { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background-color: var(--denim-light); color: white; border: none; padding: 6px 8px; border-radius: 6px; font-weight: 600; font-size: 14px; width: 84px; text-align: center; cursor: pointer; transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.15s ease; display: none; z-index: 21; overflow: hidden; white-space: nowrap; align-items: center; justify-content: center; will-change: width; }
+        #btnMoreCalculations:active { background-color: #2c3e50; }
+        #btnMoreCalculations.is-active { background-color: var(--denim-dark); width: 56px; }
+        .header-controls { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; gap: 10px; z-index: 22; align-items: center; }
+        .header-toggle-btn, .header-back-btn { width: min(32px, 8.5vw); height: min(32px, 8.5vw); border-radius: 50%; border: 1px solid var(--denim-light); background-color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: min(14px, 3.8vw); transition: transform 0.12s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease; color: var(--denim-light); flex-shrink: 0; will-change: transform; }
+        .header-back-btn { font-size: min(18px, 5vw); font-weight: 900; color: #000; }
+        .header-toggle-btn:active, .header-back-btn:active { transform: scale(0.92); background-color: var(--denim-light); color: white; }
+        .header-toggle-btn.active { background-color: var(--denim-light); color: white; border-color: var(--denim-dark); }
+        .header-toggle-btn.vibrate-active { background-color: #ff9800; color: white; border-color: #f57c00; animation: pulse-orange 1.5s ease-in-out infinite; }
+        .header-toggle-btn.voice-active { background-color: #00c853; color: white; border-color: #009624; animation: pulse-green 1.5s ease-in-out infinite; }
+        @keyframes pulse-orange { 0%,100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.6); } 50% { box-shadow: 0 0 0 6px rgba(255, 152, 0, 0); } }
+        @keyframes pulse-green { 0%,100% { box-shadow: 0 0 0 0 rgba(0, 200, 83, 0.6); } 50% { box-shadow: 0 0 0 6px rgba(0, 200, 83, 0); } }
+
+        /* 覆盖层菜单 */
+        #moreCalculationsOverlay { position: fixed; top: 55px; right: 0; width: 100%; height: calc(100% - 55px); background-color: rgba(0,0,0,0); z-index: 19; display: none; justify-content: flex-end; align-items: flex-start; pointer-events: none; contain: strict; }
+        #moreCalculationsOverlay.is-visible { background-color: rgba(0,0,0,0.5); pointer-events: auto; transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        #moreCalculationsMenu { width: 146px; height: 100%; background-color: var(--bg-card); box-shadow: -2px 0 10px rgba(0,0,0,0.1); transform: translate3d(100%, 0, 0); transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1); padding: 12px 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; align-items: center; position: relative; overflow-x: hidden; overflow-y: auto; will-change: transform; }
+        #moreCalculationsOverlay.is-visible #moreCalculationsMenu { transform: translate3d(0, 0, 0); }
+        .more-title { font-size: 14px; font-weight: 700; color: #2c3e50; margin-bottom: 0px; padding-bottom: 6px; border-bottom: 1px solid var(--border-color); text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0; width: auto; display: inline-block; text-align: center; white-space: nowrap; }
+        #moreMenuItemsContainer { overflow-y: auto; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; gap: 14px; width: 100%; align-items: center; padding: 8px 2px; margin: 4px 0; min-height: 0; }
+        #moreMenuItemsContainer::-webkit-scrollbar { width: 4px; }
+        #moreMenuItemsContainer::-webkit-scrollbar-track { background: transparent; }
+        #moreMenuItemsContainer::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 2px; }
+        .overlay-nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 90px; height: 82px; min-width: 70px; min-height: 66px; flex-shrink: 0; background: var(--bg-card); border: 2px solid var(--denim-light); border-radius: var(--radius); color: var(--text-main); font-size: clamp(11px, 3.2vw, 13px); font-weight: 700; text-align: center; cursor: pointer; box-shadow: var(--shadow); transition: transform 0.12s ease, background-color 0.15s ease, border-color 0.15s ease; padding: 4px; box-sizing: border-box; margin-bottom: 2px; align-self: center; will-change: transform; }
+        .overlay-nav-btn:active { transform: scale(0.96); background-color: #f5f5f5; border-color: #2c3e50; }
+        .overlay-icon-box { width: 32px; height: 32px; margin-bottom: 2px; }
+        .menu-icon-svg { width: 100%; height: 100%; overflow: visible; }
+        .menu-eng-line { stroke: #555; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+        .menu-eng-hidden { stroke: #bbb; stroke-width: 1; stroke-dasharray: 2,2; fill: none; }
+        .menu-highlight-red { stroke: #e53935; stroke-width: 2.2; stroke-linecap: round; }
+        .menu-highlight-blue { stroke: #1e88e5; stroke-width: 1.2; stroke-linecap: round; stroke-dasharray: 2,2; }
+        .menu-highlight-yellow { stroke: #fbc02d; stroke-width: 2.2; stroke-linecap: round; }
+        .menu-fill-soil { fill: #795548; stroke: none; fill-opacity: 0.9; }
+        .overlay-controls { flex-shrink: 0; width: 100%; padding-top: 8px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: auto; margin-bottom: 14px; }
+        .overlay-toggle-btn { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--denim-light); background-color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 19px; transition: transform 0.12s ease, background-color 0.15s ease, color 0.15s ease; color: var(--denim-light); flex: 0 0 auto; will-change: transform; }
+        .overlay-toggle-btn:active { transform: scale(0.92); background-color: var(--denim-light); color: white; }
+        .overlay-toggle-btn.active { background-color: var(--denim-light); color: white; border-color: var(--denim-dark); }
+        .overlay-toggle-btn.vibrate-active { background-color: #ff9800; color: white; border-color: #f57c00; animation: pulse-orange 1.5s ease-in-out infinite; }
+        .overlay-toggle-btn.voice-active { background-color: #00c853; color: white; border-color: #009624; animation: pulse-green 1.5s ease-in-out infinite; }
+
+        /* 内容区域 */
+        .content-area { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px; padding-left: calc(12px + env(safe-area-inset-left, 0px)); padding-right: calc(12px + env(safe-area-inset-right, 0px)); -webkit-overflow-scrolling: touch; position: relative; contain: layout; }
+        .page { display: none; opacity: 0; transform: translate3d(0, 0, 0); contain: layout style; }
+        .page.active { display: block; opacity: 1; content-visibility: visible; }
+        .page.transition-right-to-left { animation: transitionRightToLeft 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .page.transition-left-to-right { animation: transitionLeftToRight 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        @keyframes transitionRightToLeft { from { opacity: 0; transform: translate3d(24px, 0, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+        @keyframes transitionLeftToRight { from { opacity: 0; transform: translate3d(-24px, 0, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+
+        /* 卡片和输入 */
+        .card { background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%); border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 14px rgba(77,116,179,0.06); padding: 12px; margin-bottom: 12px; border: 1px solid #e6e9ef; contain: layout style; position: relative; }
+        .card::after { content: ''; position: absolute; top: 0; left: 8px; right: 8px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent); border-radius: 14px 14px 0 0; pointer-events: none; }
+        .mode-tabs { display: flex; background: linear-gradient(180deg, #e6e9ef 0%, #dce0e7 100%); border-radius: 10px; padding: 3px; margin-bottom: 12px; contain: layout; box-shadow: inset 0 1px 2px rgba(0,0,0,0.06); }
+        .mode-tab { flex: 1; text-align: center; padding: 8px 0; font-size: 16px; font-weight: 600; color: #8a8f98; border-radius: 8px; cursor: pointer; transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s ease, box-shadow 0.2s ease, transform 0.15s ease; will-change: transform; letter-spacing: 0.2px; }
+        .mode-tab.active { background: linear-gradient(180deg, #ffffff 0%, #f7f8fa 100%); color: #2e7d32; box-shadow: 0 2px 8px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04); transform: scale(1.02); }
+        .home-card { text-align: center; padding: 14px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; contain: layout; }
+        .home-title-background { background: linear-gradient(135deg, rgba(77,116,179,0.12) 0%, rgba(77,116,179,0.06) 100%); padding: 8px 10px; border-radius: 10px; width: 100%; margin-bottom: 14px; box-sizing: border-box; border: 1px solid rgba(77,116,179,0.08); }
+        .nav-btn-wrap { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .nav-btn-wrap .nav-btn-label { font-size: 14px; font-weight: 600; color: #5a6070; letter-spacing: 0.3px; }
+        .nav-btn-main { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 80px; height: 80px; background: linear-gradient(180deg, #ffffff 0%, #f5f6f8 100%); border: 1px solid #dfe3ea; border-radius: 16px; color: transparent; font-size: 0; cursor: pointer; box-shadow: 0 2px 8px rgba(77,116,179,0.08), 0 1px 2px rgba(0,0,0,0.04); transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease; padding: 0; will-change: transform; margin: 0 auto; position: relative; overflow: hidden; }
+        .nav-btn-main::after { content: ''; position: absolute; top: 0; left: 4px; right: 4px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95), transparent); pointer-events: none; }
+        .nav-btn-main:active { transform: scale(0.93); background: linear-gradient(180deg, #eef0f4 0%, #e4e7ed 100%); box-shadow: 0 1px 3px rgba(0,0,0,0.06); border-color: #c5cad4; }
+        .icon-box { width: 49px; height: 49px; }
+        .icon-svg { width: 100%; height: 100%; overflow: visible; }
+        .eng-line { stroke: #555; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+        .eng-hidden { stroke: #999; stroke-width: 1; stroke-dasharray: 2,2; fill: none; }
+        .highlight-red { stroke: #e53935; stroke-width: 3; stroke-linecap: round; }
+        .highlight-blue { stroke: #1e88e5; stroke-width: 1.5; stroke-linecap: round; stroke-dasharray: 2,2; }
+        .highlight-yellow { stroke: #fbc02d; stroke-width: 3; stroke-linecap: round; }
+        .fill-soil { fill: #795548; stroke: none; fill-opacity: 0.9; }
+
+        .input-row { display: flex; align-items: center; margin-bottom: 10px; min-height: 44px; transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1), transform 0.22s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: top center; contain: layout style; }
+        .input-row:last-child { margin-bottom: 0; }
+        .field-box { flex: 1; background: linear-gradient(180deg, #f5f6f8 0%, #f0f2f5 100%); border: 1px solid #dfe2e8; border-radius: 10px; padding: 0 8px; display: flex; align-items: center; height: 44px; transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.04); }
+        .field-box:focus-within { border-color: #4caf50; box-shadow: 0 0 0 3px rgba(76,175,80,0.12), inset 0 1px 2px rgba(0,0,0,0.02); background: linear-gradient(180deg, #f8faf8 0%, #f4f7f4 100%); }
+        .field-label { font-size: 15px; font-weight: 600; color: #4a4f58; white-space: nowrap; padding-right: 8px; margin-right: 8px; flex-shrink: 0; }
+        .field-input { flex: 1; height: 100%; background: transparent; border: none; padding: 0 8px; text-align: center; font-size: 18px; color: #1a1f26; font-weight: 600; min-width: 0; caret-color: #ff8f00; }
+        .field-input::placeholder { color: #b0b5be; font-size: 15px; font-weight: 400; }
+        .field-unit { height: 30px; background: linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.05) 100%); border-radius: 6px; padding: 0 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #6b7280; font-weight: 600; white-space: nowrap; margin-left: 4px; flex-shrink: 0; flex-wrap: wrap; max-width: 60px; text-align: center; letter-spacing: 0.2px; }
+        .clear-btn { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #333; font-size: 18px; font-weight: 300; transition: opacity 0.15s ease, color 0.15s ease, background 0.15s ease; flex-shrink: 0; margin-left: 4px; border-radius: 50%; }
+        .clear-btn:hover { opacity: 1 !important; color: #fff; background: #ef5350; }
+        .clear-btn.disabled { opacity: 0.5; cursor: default; pointer-events: none; }
+        .action-bar { display: flex; gap: 10px; margin-top: 12px; }
+        .app-btn { flex: 1; height: 44px; border-radius: 10px; border: none; font-size: 17px; font-weight: 700; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s ease, box-shadow 0.15s ease, filter 0.15s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.08); will-change: transform; letter-spacing: 0.5px; position: relative; overflow: hidden; }
+        .app-btn::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%; background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 100%); border-radius: 10px 10px 0 0; pointer-events: none; }
+        .app-btn:active { transform: scale(0.96); filter: brightness(0.92); box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+        .btn-calc { background: linear-gradient(180deg, #43a047 0%, #2e7d32 100%); }
+        .btn-clear { background: linear-gradient(180deg, #ef5350 0%, #c62828 100%); }
+        .input-row.clearing { opacity: 0; transform: scale(0.98); }
+
+        /* 结果区域 */
+        .result-card { background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%); border-radius: 14px; border: 1px solid #e6e9ef; margin-top: 12px; overflow: hidden; animation: fadeSlideUp 0.45s cubic-bezier(0.4, 0, 0.2, 1) forwards; contain: layout style; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 14px rgba(77,116,179,0.06); position: relative; }
+        .result-card::after { content: ''; position: absolute; top: 0; left: 8px; right: 8px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent); pointer-events: none; z-index: 3; }
+        .result-header { background: linear-gradient(180deg, #e8f5e9 0%, #f1f8e9 100%); color: #1b5e20; padding: 8px 12px; font-size: 15px; font-weight: 700; text-align: left; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid #c8e6c9; opacity: 0; animation: fadeSlideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards; animation-delay: 0.08s; position: relative; z-index: 2; }
+        .result-body { padding: 12px; overflow: hidden; position: relative; z-index: 2; }
+        .result-text { color: #1a1f26; font-size: 22px; font-weight: 800; margin-bottom: 10px; line-height: 1.4; opacity: 0; animation: fadeSlideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards; animation-delay: 0.15s; position: relative; }
+        .action-area { padding: 10px 12px; background: linear-gradient(180deg, #f6f7f9 0%, #eef0f3 100%); border-top: 1px solid #e2e5ea; border-bottom: 1px solid #e2e5ea; display: flex; flex-direction: column; gap: 8px; align-items: center; opacity: 0; animation: fadeSlideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards; animation-delay: 0.22s; position: relative; z-index: 2; min-height: 50px; max-height: 60px; }
+        .action-item { width: 100%; opacity: 1; transform: translate3d(0, 0, 0); }
+        .slide-out-left { animation: slideOutLeft 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        @keyframes slideOutLeft { from { transform: translate3d(0, 0, 0); opacity: 1; } to { transform: translate3d(-24px, 0, 0); opacity: 0; } }
+        .slide-in-left { animation: slideInLeft 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        @keyframes slideInLeft { from { transform: translate3d(-24px, 0, 0); opacity: 0; } to { transform: translate3d(0, 0, 0); opacity: 1; } }
+        .process-container { padding: 10px 12px; background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%); border-top: 1px solid #e2e5ea; border-bottom: 1px solid #e2e5ea; overflow: hidden; opacity: 0; animation: fadeSlideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards; animation-delay: 0.22s; position: relative; z-index: 2; margin-top: 0; margin-bottom: 0; }
+        .process-text { color: #6b7280; font-size: 13px; font-family: "SF Mono", "Fira Code", "Courier New", monospace; line-height: 1.6; white-space: pre-wrap; margin: 0; }
+        .process-container.clearing { opacity: 0; transform: translate3d(-24px, 0, 0); max-height: 0; margin: 0; padding: 0; border: none; animation: none; }
+        .action-btn { width: 100%; color: white; border: none; border-radius: 10px; font-size: 17px; font-weight: 700; padding: 10px 0; cursor: pointer; white-space: nowrap; overflow: hidden; transition: transform 0.1s ease, filter 0.15s ease; will-change: transform; box-shadow: 0 2px 8px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.08); letter-spacing: 0.3px; position: relative; }
+        .action-btn::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%; background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 100%); border-radius: 10px 10px 0 0; pointer-events: none; }
+        .btn-save { background: linear-gradient(180deg, #42a5f5 0%, #1565c0 100%); }
+        .btn-save:active { filter: brightness(0.9); transform: scale(0.96); }
+        .btn-export { background: linear-gradient(180deg, #ffa726 0%, #e65100 100%); }
+        .btn-export:active { filter: brightness(0.9); transform: scale(0.96); }
+        .btn-reexport { background: linear-gradient(180deg, #ffcc80 0%, #ff9800 100%); color: #3e2723; font-weight: 700; }
+        .btn-reexport:active { filter: brightness(0.9); transform: scale(0.96); }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translate3d(0, 16px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+        .result-card.clearing { opacity: 0; transform: scale(0.95); transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .slide-out-down { animation: slideOutDown 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        @keyframes slideOutDown { from { transform: translate3d(0, 0, 0); opacity: 1; } to { transform: translate3d(0, 100%, 0); opacity: 0; } }
+        .error-box { background: linear-gradient(180deg, #fff5f5 0%, #ffebee 100%); color: #b71c1c; padding: 12px; border-radius: 12px; border: 1px solid #f5c6c6; font-weight: 600; text-align: left; margin-top: 10px; font-size: 15px; animation: fadeSlideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards; position: relative; z-index: 2; box-shadow: 0 2px 8px rgba(183,28,28,0.06); }
+        .error-box.clearing { opacity: 0; transform: scale(0.95); }
+        .number-red { color: var(--primary-red); }
+        .hidden { display: none !important; }
+        .result-wrapper { background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%); border-radius: 16px; border: 1px solid #e2e5ea; box-shadow: 0 4px 20px rgba(0,0,0,0.06); margin-top: 12px; overflow: hidden; animation: wrapperAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; position: relative; }
+        .result-wrapper .result-card { margin-top: 0; border: none; border-radius: 0; box-shadow: none; background: transparent; animation: none; }
+        .result-wrapper .result-card::after { display: none; }
+        .result-wrapper .result-header { border-radius: 0; }
+        .result-wrapper .error-box { margin-top: 0; border-radius: 0; border-left: none; border-right: none; border-top: none; box-shadow: none; }
+        .result-wrapper.clearing { opacity: 0; transform: scale(0.95); transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes wrapperAppear { from { opacity: 0; transform: translate3d(0, 20px, 0) scale(0.97); } to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } }
+        .input-row.mode-switch-out { opacity: 0; transform: translateY(-4px); pointer-events: none; }
+        .input-row.mode-switch-in { opacity: 0; transform: translateY(4px); }
+        .mode-section-out { animation: modeSectionOut 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards; pointer-events: none; }
+        @keyframes modeSectionOut { from { opacity: 1; transform: translate3d(0, 0, 0); } to { opacity: 0; transform: translate3d(-16px, 0, 0); } }
+        .mode-section-in { animation: modeSectionIn 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        @keyframes modeSectionIn { from { opacity: 0; transform: translate3d(16px, 0, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+        .mode-btn-up { animation: modeBtnUp 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        @keyframes modeBtnUp { from { transform: translate3d(0, 4px, 0); } to { transform: translate3d(0, 0, 0); } }
+        .mode-btn-down { animation: modeBtnDown 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        @keyframes modeBtnDown { from { transform: translate3d(0, -4px, 0); } to { transform: translate3d(0, 0, 0); } }
+
+        /* 底部语音按钮 */
+        .voice-toggle-container { position: fixed; bottom: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); right: 20px; right: calc(20px + env(safe-area-inset-right, 0px)); z-index: 30; display: none; flex-direction: column; align-items: center; gap: 5px; }
+        .voice-toggle-container.visible { display: flex; }
+        .voice-toggle-btn { width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: transform 0.12s ease; display: flex; align-items: center; justify-content: center; font-size: 24px; position: relative; overflow: hidden; will-change: transform; }
+        .voice-on { background: linear-gradient(135deg, #00c853, #009624); color: white; }
+        .voice-off { background: linear-gradient(135deg, #ff5252, #b71c1c); color: white; }
+        .voice-toggle-btn:active { transform: scale(0.92); }
+        .voice-status-label { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 10px; background: white; color: #333; box-shadow: 0 2px 6px rgba(0,0,0,0.15); white-space: nowrap; opacity: 0; transform: translateY(5px); transition: opacity 0.25s ease, transform 0.25s ease; pointer-events: none; }
+        .voice-toggle-container:hover .voice-status-label, .voice-toggle-btn:focus + .voice-status-label { opacity: 1; transform: translateY(0); }
+        .voice-on.speaking { animation: pulse 0.8s ease-in-out infinite; }
+        @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(0, 200, 83, 0.6); } 50% { box-shadow: 0 0 0 10px rgba(0, 200, 83, 0); } }
+
+        /* 禁止选中 */
+        .input-item, label, .unit, .clear-input, button, .result-item, .tab, .section-title, .note, .highlight, .nav-btn-main, .overlay-nav-btn, .mode-tab, .app-btn, .field-label, .field-unit, .page-title, .home-title-background, .result-header, .result-text, .error-box { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        .icon-svg, .menu-icon-svg { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; pointer-events: none; }
+    
+        /* 淡出清除动画 */
+        .fade-clear { animation: fadeOutSilent 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        @keyframes fadeOutSilent { from { opacity: 1; } to { opacity: 0; } }
+
+        /* 导航栏左侧按钮组 */
+        .nav-btn-main.nb-click {
+            animation: nbBounce 0.35s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes nbBounce {
+            0%{transform:scale(1)} 40%{transform:scale(0.90)} 100%{transform:scale(1)}
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 顶部导航 -->
+    <div class="header">
+        <button id="btnBackHome" class="header-back-btn" onclick="goToHome()" style="display:none" title="返回首页">＜</button>
+        <div class="title-container">
+            <div id="headerIcon" class="header-icon-box"></div>
+            <div class="page-title" id="titleDisplay">工程坡计算器</div>
+        </div>
+        <div class="header-controls" id="headerControls" style="display: none;">
+            <button id="headerVibrateToggle" class="header-toggle-btn" title="震动开关" onclick="toggleVibration()">📳</button>
+            <button id="headerVoiceToggle" class="header-toggle-btn" title="语音开关" onclick="toggleVoice()">🔊</button>
+        </div>
+        <button id="btnMoreCalculations" onclick="toggleMoreMenu()">其他功能</button>
+    </div>
+
+    <!-- 覆盖层和菜单 -->
+    <div id="moreCalculationsOverlay" onclick="closeMoreMenu()">
+        <div id="moreCalculationsMenu" onclick="event.stopPropagation()">
+            <div id="moreMenuTitle" class="more-title" style="background-color:var(--denim-bg-alpha);border-radius:8px;padding:8px 6px;border-bottom:none;text-align:center;width:90px;flex-shrink:0;white-space:nowrap;overflow:visible;"></div>
+            <div id="moreMenuItemsContainer"></div>
+            <div class="overlay-controls" style="border-top:none;padding-top:4px;margin-top:auto;margin-bottom:14px;justify-content:center;">
+                <button id="overlayVibrateToggle" class="overlay-toggle-btn" title="震动开关" onclick="toggleVibration()">📳</button>
+                <button id="overlayVoiceToggle" class="overlay-toggle-btn" title="语音开关" onclick="toggleVoice()">🔊</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 内容区域 -->
+    <div class="content-area" id="contentArea">
+        <!-- 首页 -->
+        <div class="page" id="page_home">
+            <div class="card home-card">
+                <div class="home-title-background">
+                    <div style="font-size: 16px; font-weight: 600; color: #2c3e50; margin: 0;">请选择您需要使用的功能</div>
+                </div>
+                <div class="nav-grid">
+                    <!-- 坡长计算（合并后） -->
+                    <div class="nav-btn-wrap">
+                        <button class="nav-btn-main" onclick="goToPage(1)">
+                            <div class="icon-box">
+                                <svg class="icon-svg" viewBox="0 0 64 64">
+                                    <path d="M10,45 L54,45 L54,15 Z" fill="var(--icon-light-gray)" />
+                                    <line x1="10" y1="45" x2="54" y2="15" stroke="var(--icon-orange)" stroke-width="3" stroke-linecap="round" />
+                                    <circle cx="10" cy="45" r="3" fill="var(--icon-blue)" />
+                                    <circle cx="54" cy="45" r="3" fill="var(--icon-blue)" />
+                                    <circle cx="54" cy="15" r="3" fill="var(--icon-blue)" />
+                                </svg>
+                            </div>
+                        </button>
+                        <span class="nav-btn-label">坡长计算</span>
+                    </div>
+                    <!-- 面积与砖块 -->
+                    <div class="nav-btn-wrap">
+                        <button class="nav-btn-main" onclick="goToPage(2)">
+                            <div class="icon-box">
+                                <svg class="icon-svg" viewBox="0 0 64 64">
+                                    <path class="eng-line" d="M10,45 L54,45 L54,15 Z" />
+                                    <path class="eng-hidden" d="M10,45 L10,55 L54,55 L54,45" />
+                                    <line class="eng-hidden" x1="54" y1="15" x2="54" y2="25" />
+                                    <path class="highlight-blue" d="M10,45 L54,45 L54,15 Z" fill="none" />
+                                    <line class="highlight-blue" x1="32" y1="45" x2="43" y2="30" />
+                                    <line class="highlight-blue" x1="21" y1="45" x2="32" y2="30" />
+                                    <line class="highlight-blue" x1="10" y1="45" x2="21" y2="30" />
+                                    <line class="highlight-blue" x1="21" y1="30" x2="32" y2="15" />
+                                    <line class="highlight-blue" x1="32" y1="30" x2="43" y2="15" />
+                                </svg>
+                            </div>
+                        </button>
+                        <span class="nav-btn-label">面积与砖块</span>
+                    </div>
+                    <!-- 土方量计算 -->
+                    <div class="nav-btn-wrap">
+                        <button class="nav-btn-main" onclick="goToPage(3)">
+                            <div class="icon-box">
+                                <svg class="icon-svg" viewBox="0 0 64 64">
+                                    <path class="eng-line" d="M10,45 L54,45 L54,15 Z" />
+                                    <path class="eng-hidden" d="M10,45 L10,55 L54,55 L54,45" />
+                                    <line class="eng-hidden" x1="54" y1="15" x2="54" y2="25" />
+                                    <path class="fill-soil" d="M10,45 L54,45 L54,15 Z" />
+                                </svg>
+                            </div>
+                        </button>
+                        <span class="nav-btn-label">土方量计算</span>
+                    </div>
+                    <!-- 缓坡分段 -->
+                    <div class="nav-btn-wrap">
+                        <button class="nav-btn-main" onclick="goToPage(4)">
+                            <div class="icon-box">
+                                <svg class="icon-svg" viewBox="0 0 64 64">
+                                    <path class="eng-line" d="M10,45 L54,45 L54,15 Z" />
+                                    <path class="eng-hidden" d="M10,45 L10,55 L54,55 L54,45" />
+                                    <line class="eng-hidden" x1="54" y1="15" x2="54" y2="25" />
+                                    <path class="highlight-yellow" d="M10,45 L20,45 L20,41 L30,41 L30,37 L40,37 L40,33 L50,33 L50,29" />
+                                </svg>
+                            </div>
+                        </button>
+                        <span class="nav-btn-label">缓坡分段</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 坡长计算（合并页：已知高度差 + 已知坡高和坡底） -->
+        <div class="page" id="page1">
+            <div class="mode-tabs">
+                <div class="mode-tab active" id="btnSlopeModeDiff" onclick="switchSlopeMode('diff')">已知高度差</div>
+                <div class="mode-tab" id="btnSlopeModeHeight" onclick="switchSlopeMode('height')">已知坡高和坡底</div>
+            </div>
+            <div class="card">
+                <!-- 坡比输入框（共享，不参与动画） -->
+                <div class="input-row">
+                    <span class="field-label">坡比(比如1:3就填3)</span>
+                    <div class="field-box">
+                        <input type="number" step="0.0001" class="field-input" id="p1_slope_ratio" placeholder="必填">
+                        <span class="clear-btn" id="p1_slope_ratio_clear">×</span>
+                    </div>
+                </div>
+                <!-- 已知高度差 模式 -->
+                <div id="slope_mode_diff" style="width:100%;">
+                    <div class="input-row">
+                        <span class="field-label">坡的高度差</span>
+                        <div class="field-box">
+                            <input type="number" step="0.0001" class="field-input" id="p1_slope_len" placeholder="可不填">
+                            <span class="clear-btn" id="p1_slope_len_clear">×</span>
+                            <span class="field-unit">米</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- 已知坡高和坡底 模式 -->
+                <div id="slope_mode_height" style="display:none; width:100%;">
+                    <div class="input-row">
+                        <span class="field-label">坡高</span>
+                        <div class="field-box">
+                            <input type="number" step="0.0001" class="field-input" id="p1h_slope_height" placeholder="可不填">
+                            <span class="clear-btn" id="p1h_slope_height_clear">×</span>
+                            <span class="field-unit">米</span>
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <span class="field-label">坡底</span>
+                        <div class="field-box">
+                            <input type="number" step="0.0001" class="field-input" id="p1h_slope_bottom" placeholder="可不填">
+                            <span class="clear-btn" id="p1h_slope_bottom_clear">×</span>
+                            <span class="field-unit">米</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- 按钮行（独立动画） -->
+                <div id="slope_btns_diff" style="width:100%;">
+                    <div class="action-bar">
+                        <button class="app-btn btn-clear" onclick="clearSlopeDiff()">清除</button>
+                        <button class="app-btn btn-calc" onclick="calcSlopeDiff()">计算</button>
+                    </div>
+                </div>
+                <div id="slope_btns_height" style="display:none; width:100%;">
+                    <div class="action-bar">
+                        <button class="app-btn btn-clear" onclick="clearSlopeHeight()">清除</button>
+                        <button class="app-btn btn-calc" onclick="calcSlopeHeight()">计算</button>
+                    </div>
+                </div>
+            </div>
+            <div id="res1_diff" class="hidden"></div>
+            <div id="res1_height" class="hidden"></div>
+        </div>
+
+        <!-- 面积与砖块 -->
+        <div class="page" id="page2">
+            <div class="mode-tabs">
+                <div class="mode-tab active" id="btnAreaModeIrregular" onclick="switchAreaMode('irregular')">不规则坡面</div>
+                <div class="mode-tab" id="btnAreaModeRegular" onclick="switchAreaMode('regular')">规则坡面</div>
+            </div>
+            <div class="card">
+                <!-- 坡面不规则 模式 -->
+                <div id="area_mode_irregular" style="width:100%;">
+                    <div class="input-row">
+                        <span class="field-label">坡面上沿长度</span>
+                        <div class="field-box">
+                            <input type="number" step="0.0001" class="field-input" id="p2_top_len" placeholder="必填">
+                            <span class="clear-btn" id="p2_top_len_clear">×</span>
+                            <span class="field-unit">米</span>
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <span class="field-label">坡面下沿长度</span>
+                        <div class="field-box">
+                            <input type="number" step="0.0001" class="field-input" id="p2_bottom_len" placeholder="必填">
+                            <span class="clear-btn" id="p2_bottom_len_clear">×</span>
+                            <span class="field-unit">米</span>
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <span class="field-label">坡面垂直高度</span>
+                        <div class="field-box">
+                            <input type="number" step="0.0001" class="field-input" id="p2_height" placeholder="必填">
+                            <span class="clear-btn" id="p2_height_clear">×</span>
+                            <span class="field-unit">米</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- 坡面规则 模式 -->
+                <div id="area_mode_regular" style="display:none; width:100%;">
+                    <div class="input-row">
+                        <span class="field-label">长边</span>
+                        <div class="field-box">
+                            <input type="number" step="0.0001" class="field-input" id="p2r_long" placeholder="必填">
+                            <span class="clear-btn" id="p2r_long_clear">×</span>
+                            <span class="field-unit">米</span>
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <span class="field-label">短边</span>
+                        <div class="field-box">
+                            <input type="number" step="0.0001" class="field-input" id="p2r_short" placeholder="必填">
+                            <span class="clear-btn" id="p2r_short_clear">×</span>
+                            <span class="field-unit">米</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- 共享输入 + 按钮 容器 -->
+                <div id="area_shared_block" style="width:100%; margin-top: 12px;">
+                    <div class="input-row">
+                        <span class="field-label">单位砖块面积</span>
+                        <div class="field-box">
+                            <input type="number" step="0.0001" class="field-input" id="p2_brick_area" placeholder="可不填">
+                            <span class="clear-btn" id="p2_brick_area_clear">×</span>
+                            <span class="field-unit">平方米</span>
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <span class="field-label">单位砖块有几块砖</span>
+                        <div class="field-box">
+                            <input type="number" step="0.0001" class="field-input" id="p2_bricks_per_unit" placeholder="可不填">
+                            <span class="clear-btn" id="p2_bricks_per_unit_clear">×</span>
+                            <span class="field-unit">块</span>
+                        </div>
+                    </div>
+                    <div id="area_btns_irregular" style="width:100%;">
+                        <div class="action-bar">
+                            <button class="app-btn btn-clear" onclick="clearPage2()">清除</button>
+                            <button class="app-btn btn-calc" onclick="calcPage2()">计算</button>
+                        </div>
+                    </div>
+                    <div id="area_btns_regular" style="display:none; width:100%;">
+                        <div class="action-bar">
+                            <button class="app-btn btn-clear" onclick="clearPage2Regular()">清除</button>
+                            <button class="app-btn btn-calc" onclick="calcPage2Regular()">计算</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="res2" class="hidden"></div>
+            <div id="res2_regular" class="hidden"></div>
+        </div>
+
+        <!-- 土方量计算 -->
+        <div class="page" id="page3">
+            <div class="card">
+                <div class="input-row">
+                    <span class="field-label">上平行边长度</span>
+                    <div class="field-box">
+                        <input type="number" step="0.0001" class="field-input" id="p3_top_len" placeholder="必填">
+                        <span class="clear-btn" id="p3_top_len_clear">×</span>
+                        <span class="field-unit">米</span>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <span class="field-label">下平行边长度</span>
+                    <div class="field-box">
+                        <input type="number" step="0.0001" class="field-input" id="p3_bottom_len" placeholder="必填">
+                        <span class="clear-btn" id="p3_bottom_len_clear">×</span>
+                        <span class="field-unit">米</span>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <span class="field-label">斜坡水平长度</span>
+                    <div class="field-box">
+                        <input type="number" step="0.0001" class="field-input" id="p3_h_len" placeholder="必填">
+                        <span class="clear-btn" id="p3_h_len_clear">×</span>
+                        <span class="field-unit">米</span>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <span class="field-label">斜坡垂直高度</span>
+                    <div class="field-box">
+                        <input type="number" step="0.0001" class="field-input" id="p3_v_height" placeholder="必填">
+                        <span class="clear-btn" id="p3_v_height_clear">×</span>
+                        <span class="field-unit">米</span>
+                    </div>
+                </div>
+                <div class="action-bar">
+                    <button class="app-btn btn-clear" onclick="clearPage3()">清除</button>
+                    <button class="app-btn btn-calc" onclick="calcPage3()">计算</button>
+                </div>
+            </div>
+            <div id="res3" class="hidden"></div>
+        </div>
+
+        <!-- 缓坡分段计算 -->
+        <div class="page" id="page4">
+            <div class="mode-tabs">
+                <div class="mode-tab active" id="btnModeCount" onclick="switchMode('count')">已知段数</div>
+                <div class="mode-tab" id="btnModeStep" onclick="switchMode('step')">已知每段长度</div>
+            </div>
+            <div class="card">
+                <div class="input-row">
+                    <span class="field-label">缓坡长度</span>
+                    <div class="field-box">
+                        <input type="number" step="0.0001" class="field-input" id="p4_len" placeholder="必填">
+                        <span class="clear-btn" id="p4_len_clear">×</span>
+                        <span class="field-unit">米</span>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <span class="field-label">缓坡高度差</span>
+                    <div class="field-box">
+                        <input type="number" step="0.0001" class="field-input" id="p4_diff" placeholder="必填">
+                        <span class="clear-btn" id="p4_diff_clear">×</span>
+                        <span class="field-unit">米</span>
+                    </div>
+                </div>
+                <div id="mode_input_count" class="input-row">
+                    <span class="field-label">分为多少段</span>
+                    <div class="field-box">
+                        <input type="number" step="0.0001" class="field-input" id="p4_count" placeholder="必填">
+                        <span class="clear-btn" id="p4_count_clear">×</span>
+                        <span class="field-unit">段</span>
+                    </div>
+                </div>
+                <div id="mode_input_step" class="input-row hidden">
+                    <span class="field-label">每段长度</span>
+                    <div class="field-box">
+                        <input type="number" step="0.0001" class="field-input" id="p4_step" placeholder="必填">
+                        <span class="clear-btn" id="p4_step_clear">×</span>
+                        <span class="field-unit">米</span>
+                    </div>
+                </div>
+                <div class="action-bar">
+                    <button class="app-btn btn-clear" onclick="clearPage4()">清除</button>
+                    <button class="app-btn btn-calc" onclick="calcPage4()">计算</button>
+                </div>
+            </div>
+            <div id="res4" class="hidden"></div>
+        </div>
+    </div>
+
+    <!-- 底部语音按钮（备用） -->
+    <div class="voice-toggle-container" id="bottomVoiceContainer">
+        <button id="bottomVoiceToggle" class="voice-toggle-btn voice-off" onclick="toggleVoice()">🔇</button>
+        <div class="voice-status-label">语音报数</div>
+    </div>
+
+    <script>
+        // ===== 全局配置与状态 =====
+        var STORAGE_KEY = 'engineering_slope_calculator_data';
+
+        // 缓存常用 DOM 元素引用（减少重复查询，低性能设备优化）
+        var DOM = {};
+
+        function cacheDOM() {
+            DOM.pages = document.querySelectorAll('.page');
+            DOM.titleDisplay = document.getElementById('titleDisplay');
+            DOM.headerIcon = document.getElementById('headerIcon');
+            DOM.btnMore = document.getElementById('btnMoreCalculations');
+            DOM.headerControls = document.getElementById('headerControls');
+            DOM.overlay = document.getElementById('moreCalculationsOverlay');
+            DOM.menuTitle = document.getElementById('moreMenuTitle');
+            DOM.menuContainer = document.getElementById('moreMenuItemsContainer');
+            DOM.contentArea = document.getElementById('contentArea');
+            DOM.hvToggle = document.getElementById('headerVibrateToggle');
+            DOM.ovToggle = document.getElementById('overlayVibrateToggle');
+            DOM.hVoiceToggle = document.getElementById('headerVoiceToggle');
+            DOM.btnBackHome = document.getElementById('btnBackHome');
+            DOM.ovVoiceToggle = document.getElementById('overlayVoiceToggle');
+            DOM.bvToggle = document.getElementById('bottomVoiceToggle');
+            DOM.speechAvailable = !!(window.speechSynthesis && window.SpeechSynthesisUtterance);
+        }
+
+        // 坡长计算合并后的图标
+        var slopeCalcIcon = '<path d="M10,45 L54,45 L54,15 Z" fill="var(--icon-light-gray)" /><line x1="10" y1="45" x2="54" y2="15" stroke="var(--icon-orange)" stroke-width="3" stroke-linecap="round" /><circle cx="10" cy="45" r="3" fill="var(--icon-blue)" /><circle cx="54" cy="45" r="3" fill="var(--icon-blue)" /><circle cx="54" cy="15" r="3" fill="var(--icon-blue)" />';
+
+        var PAGE_CONFIG = {
+            home: { title: '工程坡计算器', showMore: false, iconSvg: null },
+            1: { title: '坡长计算', showMore: false, iconSvg: slopeCalcIcon },
+            2: { title: '面积与砖块计算', showMore: false, iconSvg: '<path class="eng-line" d="M10,45 L54,45 L54,15 Z" /><path class="eng-hidden" d="M10,45 L10,55 L54,55 L54,45" /><line class="eng-hidden" x1="54" y1="15" x2="54" y2="25" /><path class="highlight-blue" d="M10,45 L54,45 L54,15 Z" fill="none" /><line class="highlight-blue" x1="32" y1="45" x2="43" y2="30" /><line class="highlight-blue" x1="21" y1="45" x2="32" y2="30" /><line class="highlight-blue" x1="10" y1="45" x2="21" y2="30" /><line class="highlight-blue" x1="21" y1="30" x2="32" y2="15" /><line class="highlight-blue" x1="32" y1="30" x2="43" y2="15" />' },
+            3: { title: '土方量计算', showMore: false, iconSvg: '<path class="eng-line" d="M10,45 L54,45 L54,15 Z" /><path class="eng-hidden" d="M10,45 L10,55 L54,55 L54,45" /><line class="eng-hidden" x1="54" y1="15" x2="54" y2="25" /><path class="fill-soil" d="M10,45 L54,45 L54,15 Z" />' },
+            4: { title: '缓坡分段计算', showMore: false, iconSvg: '<path class="eng-line" d="M10,45 L54,45 L54,15 Z" /><path class="eng-hidden" d="M10,45 L10,55 L54,55 L54,45" /><line class="eng-hidden" x1="54" y1="15" x2="54" y2="25" /><path class="highlight-yellow" d="M10,45 L20,45 L20,41 L30,41 L30,37 L40,37 L40,33 L50,33 L50,29" />' }
+        };
+        var MENU_ICONS = {
+            1: '<path d="M10,45 L54,45 L54,15 Z" fill="var(--icon-light-gray)" /><line x1="10" y1="45" x2="54" y2="15" stroke="var(--icon-orange)" stroke-width="2.2" stroke-linecap="round" /><circle cx="10" cy="45" r="2.5" fill="var(--icon-blue)" /><circle cx="54" cy="45" r="2.5" fill="var(--icon-blue)" /><circle cx="54" cy="15" r="2.5" fill="var(--icon-blue)" />',
+            2: '<path class="menu-eng-line" d="M10,45 L54,45 L54,15 Z" /><path class="menu-eng-hidden" d="M10,45 L10,55 L54,55 L54,45" /><line class="menu-eng-hidden" x1="54" y1="15" x2="54" y2="25" /><path class="menu-highlight-blue" d="M10,45 L54,45 L54,15 Z" fill="none" /><line class="menu-highlight-blue" x1="32" y1="45" x2="43" y2="30" /><line class="menu-highlight-blue" x1="21" y1="45" x2="32" y2="30" /><line class="menu-highlight-blue" x1="10" y1="45" x2="21" y2="30" /><line class="menu-highlight-blue" x1="21" y1="30" x2="32" y2="15" /><line class="menu-highlight-blue" x1="32" y1="30" x2="43" y2="15" />',
+            3: '<path class="menu-eng-line" d="M10,45 L54,45 L54,15 Z" /><path class="menu-eng-hidden" d="M10,45 L10,55 L54,55 L54,45" /><line class="menu-eng-hidden" x1="54" y1="15" x2="54" y2="25" /><path class="menu-fill-soil" d="M10,45 L54,45 L54,15 Z" />',
+            4: '<path class="menu-eng-line" d="M10,45 L54,45 L54,15 Z" /><path class="menu-eng-hidden" d="M10,45 L10,55 L54,55 L54,45" /><line class="menu-eng-hidden" x1="54" y1="15" x2="54" y2="25" /><path class="menu-highlight-yellow" d="M10,45 L20,45 L20,41 L30,41 L30,37 L40,37 L40,33 L50,33 L50,29" />'
+        };
+
+        // 状态变量
+        var voiceEnabled = false;
+        var vibrateEnabled = false;
+        var isAnimating = false;
+        var animLockTimer = null;           // 动画锁超时兜底（防止死锁）
+        var currentPageId = 'home';
+        var currentCalculation = { inputs: null, result: null, pageId: null };
+        var inputBuffer = {}, inputBufferTimer = {}, inputLocked = {};
+        var lastInputValue = {}, inputFocusValue = {};
+        var isSpeakingFullNumber = false;
+        var useBuzzerFallback = false;
+        var longPressTimer;
+        var longPressTriggered = false;
+        var currentSlopeMode = 'diff';
+        var _rafId = null;
+        var _pendingWrites = [];
+        var _lastTouchTime = 0;             // 触摸/鼠标事件去重
+
+        var BUFFER_DELAY = 250;
+        var LOCK_DURATION = 1000;
+        var LONG_PRESS_DURATION = 500;
+        var ANIM_LOCK_TIMEOUT = 600;         // 动画锁最大持有时间（兜底）
+
+        // ===== RAF 批处理工具 =====
+        function batchDOM(writeFn) {
+            _pendingWrites.push(writeFn);
+            if (_rafId) return;
+            _rafId = requestAnimationFrame(function() {
+                _rafId = null;
+                var fns = _pendingWrites.splice(0);
+                for (var i = 0; i < fns.length; i++) fns[i]();
+            });
+        }
+
+        // ===== 动画锁管理（带超时兜底，防止低性能设备死锁）=====
+        function lockAnimating() {
+            isAnimating = true;
+            if (animLockTimer) clearTimeout(animLockTimer);
+            animLockTimer = setTimeout(function() {
+                isAnimating = false;
+                animLockTimer = null;
+            }, ANIM_LOCK_TIMEOUT);
+        }
+
+        function unlockAnimating() {
+            isAnimating = false;
+            if (animLockTimer) { clearTimeout(animLockTimer); animLockTimer = null; }
+        }
+
+        // ===== 核心功能函数 =====
+        function clearPageAnimations() {
+            for (var i = 0; i < DOM.pages.length; i++) {
+                DOM.pages[i].classList.remove('transition-right-to-left', 'transition-left-to-right');
+            }
+        }
+
+        function goToPage(pageNum, fromOverlay) {
+            if (isAnimating) return;
+            if (voiceEnabled) fallbackBeep();
+            var currentPage = document.querySelector('.page.active');
+            var targetPage = document.getElementById('page' + pageNum);
+            if (!currentPage || !targetPage || currentPage === targetPage) return;
+            silentFadeClear();
+
+            lockAnimating();
+            batchDOM(function() {
+                clearPageAnimations();
+                updateHeader(pageNum);
+                currentPage.classList.remove('active');
+                targetPage.classList.add('active', fromOverlay ? 'transition-left-to-right' : 'transition-right-to-left');
+                DOM.contentArea.scrollTop = 0;
+            });
+
+            setTimeout(function() {
+                targetPage.classList.remove('transition-left-to-right', 'transition-right-to-left');
+                unlockAnimating();
+            }, 380);
+        }
+
+        function goToHome() {
+            if (isAnimating) return;
+            var currentPage = document.querySelector('.page.active');
+            var homePage = document.getElementById('page_home');
+            if (!currentPage || currentPage === homePage) return;
+
+            lockAnimating();
+            batchDOM(function() {
+                clearPageAnimations();
+                updateHeader('home');
+                currentPage.classList.remove('active');
+                homePage.classList.add('active', 'transition-left-to-right');
+                DOM.contentArea.scrollTop = 0;
+            });
+
+            setTimeout(function() {
+                homePage.classList.remove('transition-left-to-right');
+                unlockAnimating();
+            }, 380);
+        }
+
+        function updateHeader(pageIdentifier) {
+            var config = PAGE_CONFIG[pageIdentifier];
+            if (!config) return;
+
+            currentPageId = pageIdentifier;
+            DOM.titleDisplay.innerText = config.title;
+            DOM.titleDisplay.style.fontSize = pageIdentifier === 'home' ? 'min(28px, 8vw)' : '19px';
+
+            if (config.iconSvg) {
+                DOM.headerIcon.innerHTML = '<svg class="icon-svg" viewBox="0 0 64 64">' + config.iconSvg + '</svg>';
+                DOM.headerIcon.className = 'header-icon-box visible';
+            } else {
+                DOM.headerIcon.className = 'header-icon-box';
+            }
+
+            DOM.btnBackHome.style.display = pageIdentifier === 'home' ? 'none' : 'flex';
+
+            DOM.btnMore.style.display = config.showMore ? 'block' : 'none';
+            DOM.headerControls.style.display = 'flex';
+
+            if (config.showMore) {
+                generateMoreMenuItems(pageIdentifier);
+                DOM.menuTitle.innerText = '其他计算';
+                DOM.btnMore.classList.remove('is-active');
+                DOM.btnMore.innerText = '其他功能';
+            } else {
+                closeMoreMenu();
+            }
+        }
+
+        function toggleMoreMenu() {
+            if (isAnimating) return;
+            var overlay = DOM.overlay;
+
+            if (overlay.classList.contains('is-visible')) {
+                closeMoreMenu();
+            } else {
+                DOM.btnMore.classList.add('is-active');
+                DOM.btnMore.innerText = '关闭';
+                overlay.classList.add('is-visible');
+            }
+        }
+
+        function closeMoreMenu() {
+            DOM.btnMore.classList.remove('is-active');
+            if (DOM.btnMore.style.display !== 'none') DOM.btnMore.innerText = '其他功能';
+            DOM.overlay.classList.remove('is-visible');
+        }
+
+        function generateMoreMenuItems(currentPageId) {
+            var container = DOM.menuContainer;
+            container.innerHTML = '';
+            var otherPages = [1, 2, 3, 4].filter(function(id) { return id != currentPageId; });
+
+            var frag = document.createDocumentFragment();
+            for (var i = 0; i < otherPages.length; i++) {
+                var pageId = otherPages[i];
+                var btn = document.createElement('button');
+                btn.className = 'overlay-nav-btn';
+                btn.setAttribute('data-page', pageId);
+                btn.innerHTML =
+                    '<div class="overlay-icon-box">' +
+                    '<svg class="menu-icon-svg" viewBox="0 0 64 64">' + MENU_ICONS[pageId] + '</svg>' +
+                    '</div>' +
+                    PAGE_CONFIG[pageId].title.replace('计算', '');
+                frag.appendChild(btn);
+            }
+            container.appendChild(frag);
+
+            var btns = container.querySelectorAll('.overlay-nav-btn');
+            for (var j = 0; j < btns.length; j++) {
+                btns[j].addEventListener('click', function() {
+                    var pid = parseInt(this.getAttribute('data-page'));
+                    closeMoreMenu();
+                    goToPage(pid, true);
+                }, { passive: true });
+            }
+        }
+
+        // ===== 坡长计算模式切换 =====
+        function switchSlopeMode(mode) {
+            var isDiff = mode === 'diff';
+            currentSlopeMode = mode;
+            document.getElementById('btnSlopeModeDiff').classList.toggle('active', isDiff);
+            document.getElementById('btnSlopeModeHeight').classList.toggle('active', !isDiff);
+            var diffDiv = document.getElementById('slope_mode_diff');
+            var heightDiv = document.getElementById('slope_mode_height');
+            var diffBtns = document.getElementById('slope_btns_diff');
+            var heightBtns = document.getElementById('slope_btns_height');
+
+            if (isDiff) {
+                if (heightDiv.style.display !== 'none') {
+                    heightDiv.classList.remove('mode-section-in');
+                    heightDiv.classList.add('mode-section-out');
+                    heightBtns.classList.remove('mode-btn-up', 'mode-btn-down');
+                    heightBtns.classList.add('mode-btn-up');
+                    setTimeout(function() {
+                        heightDiv.style.display = 'none';
+                        heightDiv.classList.remove('mode-section-out');
+                        heightBtns.style.display = 'none';
+                        heightBtns.classList.remove('mode-btn-up', 'mode-btn-down');
+                        var hInputs = ['p1h_slope_height', 'p1h_slope_bottom'];
+                        for (var i = 0; i < hInputs.length; i++) {
+                            var el = document.getElementById(hInputs[i]);
+                            if (el) { el.value = ''; updateClearButtonState(hInputs[i]); }
+                        }
+                        clearResult('res1_height');
+                        diffDiv.style.display = '';
+                        diffDiv.classList.add('mode-section-in');
+                        diffBtns.style.display = '';
+                        diffBtns.classList.add('mode-btn-down');
+                        setTimeout(function() {
+                            diffDiv.classList.remove('mode-section-in');
+                            diffBtns.classList.remove('mode-btn-down');
+                        }, 220);
+                    }, 220);
+                }
+            } else {
+                if (diffDiv.style.display !== 'none') {
+                    diffDiv.classList.remove('mode-section-in');
+                    diffDiv.classList.add('mode-section-out');
+                    diffBtns.classList.remove('mode-btn-up', 'mode-btn-down');
+                    diffBtns.classList.add('mode-btn-down');
+                    setTimeout(function() {
+                        diffDiv.style.display = 'none';
+                        diffDiv.classList.remove('mode-section-out');
+                        diffBtns.style.display = 'none';
+                        diffBtns.classList.remove('mode-btn-up', 'mode-btn-down');
+                        var el = document.getElementById('p1_slope_len');
+                        if (el) { el.value = ''; updateClearButtonState('p1_slope_len'); }
+                        clearResult('res1_diff');
+                        heightDiv.style.display = '';
+                        heightDiv.classList.add('mode-section-in');
+                        heightBtns.style.display = '';
+                        heightBtns.classList.add('mode-btn-up');
+                        setTimeout(function() {
+                            heightDiv.classList.remove('mode-section-in');
+                            heightBtns.classList.remove('mode-btn-up');
+                        }, 220);
+                    }, 220);
+                }
+            }
+        }
+
+        // ===== 语音与震动系统 =====
+        function vibrate() {
+            if (!vibrateEnabled) return;
+            try {
+                if (window.AndroidBridge && window.AndroidBridge.vibrate) {
+                    window.AndroidBridge.vibrate(15);
+                } else if (navigator.vibrate) {
+                    navigator.vibrate(15);
+                } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.vibrate) {
+                    window.webkit.messageHandlers.vibrate.postMessage(15);
+                }
+            } catch (e) {}
+        }
+
+        function convertNumberToChinese(text) {
+            var numberRegex = /(\d+(\.\d+)?)/g;
+            var digits = {'0':'零','1':'一','2':'二','3':'三','4':'四','5':'五','6':'六','7':'七','8':'八','9':'九'};
+            var units = ['十', '百', '千', '万', '亿'];
+
+            return text.replace(numberRegex, function(match) {
+                var parts = match.split('.');
+                var integerPart = parts[0];
+                var decimalPart = parts[1];
+                var result = '';
+
+                if (integerPart && integerPart !== '0') {
+                    var numStr = integerPart.replace(/^0+/, '');
+                    if (!numStr) numStr = '0';
+
+                    var len = numStr.length;
+                    for (var i = 0; i < len; i++) {
+                        var digit = numStr[i];
+                        var pos = len - i - 1;
+
+                        if (digit !== '0') {
+                            result += digits[digit];
+                            if (pos > 0) {
+                                if (pos % 4 === 0) {
+                                    var unitIndex = Math.floor(pos / 4) + 1;
+                                    result += units[2 + unitIndex - 1];
+                                } else if (pos % 4 > 0) {
+                                    result += units[(pos % 4) - 1];
+                                }
+                            }
+                        } else {
+                            if (i < len - 1 && numStr.substring(i + 1) !== new Array(len - i).join('0')) {
+                                if (result.charAt(result.length - 1) !== '零') {
+                                    result += '零';
+                                }
+                            }
+                        }
+                    }
+
+                    if (result === '' && decimalPart) result = '零';
+                }
+
+                if (decimalPart) {
+                    if (!result) result = '零';
+                    result += '点';
+                    for (var j = 0; j < decimalPart.length; j++) {
+                        result += digits[decimalPart[j]];
+                    }
+                }
+
+                return result;
+            });
+        }
+
+        var audioCtx = null;
+        function ensureAudioContext() {
+            if (!audioCtx) {
+                try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function fallbackBeep() {
+            try {
+                var ctx = ensureAudioContext();
+                if (!ctx) return;
+                var osc = ctx.createOscillator();
+                var gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 880;
+                gain.gain.value = 0.3;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+                osc.stop(ctx.currentTime + 0.2);
+            } catch (e) {}
+        }
+
+        /* ===== 蜂鸣替代系统 ===== */
+        var _buzzerCtx = null;
+        function getBuzzerCtx() {
+            if (!_buzzerCtx) {
+                try { _buzzerCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+            }
+            if (_buzzerCtx.state === 'suspended') _buzzerCtx.resume();
+            return _buzzerCtx;
+        }
+        function buzzerBeep(freq, dur, delay) {
+            try {
+                var c = getBuzzerCtx(); if (!c) return;
+                var o = c.createOscillator(), g = c.createGain();
+                o.connect(g); g.connect(c.destination);
+                o.frequency.value = freq; g.gain.value = 0.3;
+                o.start(c.currentTime + (delay || 0));
+                g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + (delay || 0) + dur);
+                o.stop(c.currentTime + (delay || 0) + dur + 0.01);
+            } catch (e) {}
+        }
+        function buzzerSpeakChinese(text) {
+            var m = {'零':330,'一':440,'二':494,'三':523,'四':587,'五':659,'六':698,'七':784,'八':880,'九':988,'点':1047,'十':523,'百':587,'千':659,'万':784,'亿':880,'清':262,'空':220,'已':600,'打':700,'开':800,'关':500,'闭':400,'语':600,'音':700,'播':800,'报':500,'震':600,'动':700};
+            var d = 0.12, g = 0.02;
+            for (var i = 0; i < text.length; i++) {
+                buzzerBeep(m[text[i]] || 600, d, d * i + g * i);
+            }
+        }
+
+        /* ===== TTS 可用性自检 ===== */
+        function checkTTSAvailability() {
+            var ttsOk = false, audioOk = false;
+            try {
+                if (window.AndroidBridge && typeof AndroidBridge.ttsIsReady === 'function')
+                    ttsOk = AndroidBridge.ttsIsReady() === true;
+            } catch (e) { ttsOk = false; }
+            try {
+                var tc = new (window.AudioContext || window.webkitAudioContext)();
+                if (tc.state === 'suspended') tc.resume();
+                var to = tc.createOscillator(), tg = tc.createGain();
+                tg.gain.value = 0;
+                to.connect(tg); tg.connect(tc.destination);
+                to.start(); to.stop(tc.currentTime + 0.001);
+                audioOk = true;
+                tc.close();
+            } catch (e) { audioOk = false; }
+            if (!ttsOk || !audioOk) useBuzzerFallback = true;
+        }
+
+        function speakNumber(text) {
+            if (!voiceEnabled) return;
+            var chineseText = convertNumberToChinese(text);
+            // 蜂鸣替代模式
+            if (useBuzzerFallback) {
+                buzzerSpeakChinese(chineseText);
+            }
+            // 优先使用原生 Android TTS
+            else if (window.AndroidBridge && typeof AndroidBridge.ttsSpeak === 'function') {
+                AndroidBridge.ttsSpeak(chineseText);
+            }
+            // 回退到 Web Speech API
+            else if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
+                try {
+                    if (window.AndroidBridge && typeof AndroidBridge.ttsStop === 'function') { AndroidBridge.ttsStop(); } else { window.speechSynthesis.cancel(); }
+                    var utterance = new SpeechSynthesisUtterance(chineseText);
+                    utterance.lang = 'zh-CN';
+                    utterance.rate = 1.1;
+                    utterance.onerror = function() { fallbackBeep(); };
+                    window.speechSynthesis.speak(utterance);
+                } catch (e) {
+                    fallbackBeep();
+                }
+            } else {
+                fallbackBeep();
+            }
+
+            var voiceBtns = [DOM.hVoiceToggle, DOM.ovVoiceToggle, DOM.bvToggle];
+            for (var i = 0; i < voiceBtns.length; i++) {
+                var btn = voiceBtns[i];
+                if (btn) {
+                    btn.classList.add('speaking');
+                    (function(b) { setTimeout(function() { b.classList.remove('speaking'); }, 500); })(btn);
+                }
+            }
+        }
+
+        function toggleVoice() {
+            voiceEnabled = !voiceEnabled;
+            var updateBtn = function(btn) {
+                if (!btn) return;
+                var baseClass = btn.classList.contains('overlay-toggle-btn') ? 'overlay-toggle-btn' : 'header-toggle-btn';
+                btn.className = baseClass + ' ' + (voiceEnabled ? 'active voice-active' : '');
+                btn.innerHTML = voiceEnabled ? '🔊' : '🔇';
+            };
+            updateBtn(DOM.hVoiceToggle);
+            updateBtn(DOM.ovVoiceToggle);
+            if (DOM.bvToggle) {
+                DOM.bvToggle.className = 'voice-toggle-btn ' + (voiceEnabled ? 'voice-on' : 'voice-off');
+                DOM.bvToggle.innerHTML = voiceEnabled ? '🔊' : '🔇';
+            }
+
+            if (voiceEnabled) {
+                speakNumber('语音播报已打开');
+            } else {
+                if (!useBuzzerFallback && window.AndroidBridge && typeof AndroidBridge.ttsStop === 'function') { AndroidBridge.ttsStop(); } else if (window.speechSynthesis) window.speechSynthesis.cancel();
+            }
+        }
+
+        function toggleVibration() {
+            vibrateEnabled = !vibrateEnabled;
+            var updateBtn = function(btn) {
+                if (!btn) return;
+                var baseClass = btn.classList.contains('overlay-toggle-btn') ? 'overlay-toggle-btn' : 'header-toggle-btn';
+                btn.className = baseClass + ' ' + (vibrateEnabled ? 'active vibrate-active' : '');
+                btn.innerHTML = '📳';
+            };
+            updateBtn(DOM.hvToggle);
+            updateBtn(DOM.ovToggle);
+
+            speakNumber(vibrateEnabled ? '震动已打开' : '震动已关闭');
+            if (vibrateEnabled) vibrate();
+        }
+
+        // ===== 事件监听器管理（使用事件委托 + 被动监听优化性能）=====
+        function attachAllEventListeners() {
+            document.body.addEventListener('click', function(e) {
+                var target = e.target.closest('button, .mode-tab');
+                if (!target) return;
+
+                vibrate();
+
+                var text = target.textContent.trim();
+                var shouldSpeak = voiceEnabled && text &&
+                    !target.classList.contains('nav-btn-main') &&
+                    !target.classList.contains('overlay-nav-btn') &&
+                    !target.classList.contains('btn-calc') &&
+                    target.id.indexOf('MoreCalculations') === -1;
+
+                if (shouldSpeak) {
+                    if (target.classList.contains('btn-clear')) {
+                        speakNumber('清除');
+                    } else if (text.length <= 8) {
+                        speakNumber(text);
+                    }
+                }
+            }, { passive: true });
+
+            document.body.addEventListener('focus', function(e) {
+                if (e.target.classList.contains('field-input')) handleInputFocus(e.target);
+            }, true);
+
+            document.body.addEventListener('input', function(e) {
+                if (e.target.classList.contains('field-input')) handleInput(e.target, e);
+            }, true);
+
+            document.body.addEventListener('blur', function(e) {
+                if (e.target.classList.contains('field-input')) handleInputBlur(e.target);
+            }, true);
+
+            var selectionChangeTimer = null;
+            document.addEventListener('selectionchange', function() {
+                if (selectionChangeTimer) return;
+                selectionChangeTimer = setTimeout(function() { selectionChangeTimer = null; }, 100);
+                var activeEl = document.activeElement;
+                if (activeEl && activeEl.classList.contains('field-input')) {
+                    var id = activeEl.id;
+                    var btn = document.getElementById(id + '_clear');
+                    if (btn) {
+                        if (activeEl.value.trim()) {
+                            btn.style.display = 'flex';
+                            btn.classList.remove('disabled');
+                        } else {
+                            btn.style.display = 'none';
+                            btn.classList.add('disabled');
+                        }
+                    }
+                }
+            }, { passive: true });
+
+            // 清除按钮事件（触摸/鼠标去重，防止混合设备双重触发）
+            function handleClearAction(clearBtn) {
+                if (clearBtn.classList.contains('disabled')) return;
+                var inputId = clearBtn.id.replace('_clear', '');
+                var input = document.getElementById(inputId);
+                if (!input) return;
+                vibrate();
+                speakNumber('清空');
+                input.value = '';
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                updateClearButtonState(inputId);
+            }
+
+            document.body.addEventListener('touchstart', function(e) {
+                var clearBtn = e.target.closest('.clear-btn');
+                if (!clearBtn) return;
+                if (clearBtn.classList.contains('disabled')) return;
+                _lastTouchTime = Date.now();
+
+                var inputId = clearBtn.id.replace('_clear', '');
+                var input = document.getElementById(inputId);
+                if (!input) return;
+
+                longPressTriggered = false;
+                longPressTimer = setTimeout(function() {
+                    longPressTriggered = true;
+                    vibrate();
+                    speakNumber('清空');
+                    input.value = '';
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    updateClearButtonState(inputId);
+                }, LONG_PRESS_DURATION);
+            }, { passive: true });
+
+            document.body.addEventListener('touchend', function(e) {
+                var clearBtn = e.target.closest('.clear-btn');
+                if (!clearBtn) return;
+                clearTimeout(longPressTimer);
+                if (longPressTriggered) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                }
+                handleClearAction(clearBtn);
+            }, { passive: true });
+
+            document.body.addEventListener('touchcancel', function(e) {
+                var clearBtn = e.target.closest('.clear-btn');
+                if (!clearBtn) return;
+                clearTimeout(longPressTimer);
+            }, { passive: true });
+
+            document.body.addEventListener('mousedown', function(e) {
+                var clearBtn = e.target.closest('.clear-btn');
+                if (!clearBtn) return;
+                if (clearBtn.classList.contains('disabled')) return;
+                // 去重：如果最近 300ms 内有触摸事件，跳过鼠标处理
+                if (Date.now() - _lastTouchTime < 300) return;
+
+                var inputId = clearBtn.id.replace('_clear', '');
+                var input = document.getElementById(inputId);
+                if (!input) return;
+
+                longPressTriggered = false;
+                longPressTimer = setTimeout(function() {
+                    longPressTriggered = true;
+                    vibrate();
+                    speakNumber('清空');
+                    input.value = '';
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    updateClearButtonState(inputId);
+                }, LONG_PRESS_DURATION);
+            });
+
+            document.body.addEventListener('mouseup', function(e) {
+                var clearBtn = e.target.closest('.clear-btn');
+                if (!clearBtn) return;
+                if (clearBtn.classList.contains('disabled')) return;
+                if (Date.now() - _lastTouchTime < 300) return;
+
+                clearTimeout(longPressTimer);
+                if (longPressTriggered) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                }
+                handleClearAction(clearBtn);
+            });
+
+            document.body.addEventListener('mouseleave', function(e) {
+                var clearBtn = e.target.closest('.clear-btn');
+                if (!clearBtn) return;
+                clearTimeout(longPressTimer);
+            });
+        }
+
+        // ===== 输入处理逻辑 =====
+        function handleInputFocus(input) {
+            var id = input.id;
+            vibrate();
+            if (voiceEnabled) {
+                if (input.value) {
+                    speakNumber(input.value);
+                } else {
+                    speakNumber('开始输入');
+                }
+            }
+            inputFocusValue[id] = input.value;
+            inputBuffer[id] = '';
+            inputLocked[id] = false;
+            if (inputBufferTimer[id]) {
+                clearTimeout(inputBufferTimer[id]);
+                inputBufferTimer[id] = null;
+            }
+        }
+
+        function handleInput(input, e) {
+            vibrate();
+            var id = input.id;
+
+            // 优化：语音关闭时跳过所有语音处理
+            if (!voiceEnabled) {
+                updateClearButtonState(id);
+                return;
+            }
+
+            if (isSpeakingFullNumber) {
+                if (window.AndroidBridge && typeof AndroidBridge.ttsStop === 'function') { AndroidBridge.ttsStop(); } else { window.speechSynthesis.cancel(); }
+                isSpeakingFullNumber = false;
+            }
+
+            lastInputValue[id] = input.value;
+            updateClearButtonState(id);
+
+            var char = e.data;
+            var inputType = e.inputType;
+
+            if (char) {
+                var chineseChar = convertCharToChinese(char);
+                if (inputLocked[id]) {
+                    speakNumber(chineseChar);
+                } else {
+                    inputBuffer[id] += chineseChar;
+                    if (inputBufferTimer[id]) clearTimeout(inputBufferTimer[id]);
+                    inputBufferTimer[id] = setTimeout(function() {
+                        if (inputBuffer[id]) {
+                            speakNumber(inputBuffer[id]);
+                            inputBuffer[id] = '';
+                        }
+                    }, BUFFER_DELAY);
+                }
+            } else if (inputType && inputType.indexOf('delete') !== -1) {
+                speakNumber('删除');
+                inputLocked[id] = true;
+                inputBuffer[id] = '';
+                if (inputBufferTimer[id]) clearTimeout(inputBufferTimer[id]);
+                inputBufferTimer[id] = setTimeout(function() {
+                    inputLocked[id] = false;
+                }, LOCK_DURATION);
+            }
+        }
+
+        function handleInputBlur(input) {
+            var id = input.id;
+            if (inputBufferTimer[id]) {
+                clearTimeout(inputBufferTimer[id]);
+                inputBufferTimer[id] = null;
+                if (inputBuffer[id] && voiceEnabled) {
+                    speakNumber(inputBuffer[id]);
+                    inputBuffer[id] = '';
+                }
+            }
+
+            if (voiceEnabled && input.value && input.value !== inputFocusValue[id]) {
+                    if (window.AndroidBridge && typeof AndroidBridge.ttsStop === 'function') { AndroidBridge.ttsStop(); } else { window.speechSynthesis.cancel(); }
+                    isSpeakingFullNumber = true;
+                speakNumber(input.value);
+                setTimeout(function() { isSpeakingFullNumber = false; }, 1500);
+            }
+            inputLocked[id] = false;
+            updateClearButtonState(id);
+        }
+
+        function updateClearButtonState(inputId) {
+            var btn = document.getElementById(inputId + '_clear');
+            var input = document.getElementById(inputId);
+            if (btn && input) {
+                if (input.value.trim()) {
+                    btn.style.display = 'flex';
+                    btn.classList.remove('disabled');
+                } else {
+                    btn.style.display = 'none';
+                    btn.classList.add('disabled');
+                }
+            }
+        }
+
+        function animateInputClear(ids) {
+            for (var i = 0; i < ids.length; i++) {
+                var id = ids[i];
+                var input = document.getElementById(id);
+                var row = input ? input.closest('.input-row') : null;
+                if (row) {
+                    row.classList.add('clearing');
+                    (function(inp, r, inputId) {
+                        setTimeout(function() {
+                            inp.value = '';
+                            lastInputValue[inputId] = '';
+                            inputFocusValue[inputId] = '';
+                            inputBuffer[inputId] = '';
+                            inputLocked[inputId] = false;
+                            if (inputBufferTimer[inputId]) {
+                                clearTimeout(inputBufferTimer[inputId]);
+                                inputBufferTimer[inputId] = null;
+                            }
+                            updateClearButtonState(inputId);
+                            r.classList.remove('clearing');
+                        }, 220);
+                    })(input, row, id);
+                }
+            }
+        }
+
+        // ===== 计算逻辑 =====
+        function renderResult(containerId, title, valueHTML, values, pageId) {
+            var container = document.getElementById(containerId);
+            if (!container) return;
+
+            currentCalculation = { inputs: values, result: valueHTML.replace(/<[^>]*>/g, '').replace(/<br>/g, ' | '), pageId: pageId };
+            container.innerHTML =
+                '<div class="result-wrapper">' +
+                    '<div class="result-header">' + title + '</div>' +
+                    '<div class="result-body"><div class="result-text">' + valueHTML + '</div></div>' +
+                '</div>';
+            container.className = '';
+        }
+
+        function renderError(containerId, message) {
+            var container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '<div class="result-wrapper"><div class="error-box">' + message + '</div></div>';
+            container.className = '';
+            if (voiceEnabled) speakNumber(message.replace(/<[^>]*>/g, ''));
+        }
+
+        function formatNumber(num) {
+            return isNaN(num) ? '' : (Number.isInteger(num) ? num.toString() : num.toFixed(3));
+        }
+
+        function formatColoredResult(text) {
+            return text.replace(/(\b\d+(\.\d+)?\b)/g, '<span class="number-red">$1</span>');
+        }
+
+        function clearResult(id) {
+            var res = document.getElementById(id);
+            if (res && !res.classList.contains('hidden')) {
+                res.classList.add('hidden');
+                res.innerHTML = '';
+            }
+            currentCalculation = { inputs: null, result: null, pageId: null };
+        }
+
+        // 无声淡出清除所有页面
+        var fadeClearTimer = null;
+        function silentFadeClear() {
+            if (fadeClearTimer) { clearTimeout(fadeClearTimer); fadeClearTimer = null; }
+            var hasTargets = false;
+            var allInputs = document.querySelectorAll('input[type="number"]');
+            for (var i = 0; i < allInputs.length; i++) {
+                if (allInputs[i].value.trim()) {
+                    var row = allInputs[i].closest('.input-row');
+                    if (row) { row.classList.add('fade-clear'); hasTargets = true; }
+                }
+            }
+            var allRes = document.querySelectorAll('[id^="res"]');
+            for (var j = 0; j < allRes.length; j++) {
+                if (!allRes[j].classList.contains('hidden') && allRes[j].innerHTML.trim()) {
+                    allRes[j].classList.add('fade-clear');
+                    hasTargets = true;
+                }
+            }
+            if (!hasTargets) return;
+            fadeClearTimer = setTimeout(function() {
+                var inputs = document.querySelectorAll('input[type="number"]');
+                for (var k = 0; k < inputs.length; k++) {
+                    inputs[k].value = '';
+                    updateClearButtonState(inputs[k].id);
+                }
+                var fadeEls = document.querySelectorAll('.fade-clear');
+                for (var m = 0; m < fadeEls.length; m++) {
+                    fadeEls[m].classList.remove('fade-clear');
+                }
+                var results = document.querySelectorAll('[id^="res"]');
+                for (var n = 0; n < results.length; n++) {
+                    results[n].classList.add('hidden');
+                    results[n].innerHTML = '';
+                }
+                currentCalculation = { inputs: null, result: null, pageId: null };
+                fadeClearTimer = null;
+            }, 350);
+        }
+
+        // ===== 坡长计算：已知高度差 =====
+        function calcSlopeDiff() {
+            if (isAnimating) return;
+            var ratioVal = document.getElementById('p1_slope_ratio').value.trim();
+            var lenVal = document.getElementById('p1_slope_len').value.trim();
+
+            if (!ratioVal) {
+                if (voiceEnabled) speakNumber('请输入: 坡比');
+                return renderError('res1_diff', '请输入: 坡比');
+            }
+            if (parseFloat(ratioVal) === 0) {
+                if (voiceEnabled) speakNumber('坡比不能为零');
+                return renderError('res1_diff', '"坡比"不能为零');
+            }
+
+            if (voiceEnabled) {
+                speakNumber('开始计算');
+                setTimeout(function() { speakNumber('结果已显示'); }, 300);
+            }
+
+            var ratio = parseFloat(ratioVal);
+            var coefficient = Math.sqrt(1 + ratio * ratio).toFixed(3);
+
+            var resVal = '坡系数=' + coefficient;
+            if (lenVal) {
+                var result = (coefficient * parseFloat(lenVal)).toFixed(3);
+                resVal += '<br>最终坡长=' + result + '米';
+            }
+            var values = { '坡比': ratioVal, '坡的高度差': lenVal };
+            renderResult('res1_diff', '计算结果', formatColoredResult(resVal), values, 1);
+        }
+
+        function clearSlopeDiff() {
+            if (!isAnimating) {
+                animateInputClear(['p1_slope_ratio', 'p1_slope_len']);
+                clearResult('res1_diff');
+            }
+        }
+
+        // ===== 坡长计算：已知坡高和坡底 =====
+        function calcSlopeHeight() {
+            if (isAnimating) return;
+            var ratioVal = document.getElementById('p1_slope_ratio').value.trim();
+            var heightVal = document.getElementById('p1h_slope_height').value.trim();
+            var bottomVal = document.getElementById('p1h_slope_bottom').value.trim();
+
+            if (!ratioVal) {
+                if (voiceEnabled) speakNumber('请输入: 坡比');
+                return renderError('res1_height', '请输入: 坡比');
+            }
+            if (parseFloat(ratioVal) === 0) {
+                if (voiceEnabled) speakNumber('坡比不能为零');
+                return renderError('res1_height', '"坡比"不能为零');
+            }
+
+            if (heightVal && bottomVal) {
+                var height = parseFloat(heightVal);
+                var bottom = parseFloat(bottomVal);
+                if (height <= bottom) {
+                    if (voiceEnabled) speakNumber('坡高必须大于坡底');
+                    return renderError('res1_height', '坡高必须大于坡底');
+                }
+            }
+
+            if (voiceEnabled) {
+                speakNumber('开始计算');
+                setTimeout(function() { speakNumber('结果已显示'); }, 300);
+            }
+
+            var ratio = parseFloat(ratioVal);
+            var coefficient = Math.sqrt(1 + ratio * ratio).toFixed(3);
+
+            var resVal = '坡系数=' + coefficient;
+            if (heightVal && bottomVal) {
+                var h = parseFloat(heightVal);
+                var b = parseFloat(bottomVal);
+                var slopeDiff = h - b;
+                var result = (coefficient * slopeDiff).toFixed(3);
+                resVal += '<br>坡高度差=' + slopeDiff.toFixed(3) + '米<br>最终坡长=' + result + '米';
+            }
+            var values = { '坡比': ratioVal, '坡高': heightVal, '坡底': bottomVal };
+            renderResult('res1_height', '计算结果', formatColoredResult(resVal), values, 1);
+        }
+
+        function clearSlopeHeight() {
+            if (!isAnimating) {
+                animateInputClear(['p1_slope_ratio', 'p1h_slope_height', 'p1h_slope_bottom']);
+                clearResult('res1_height');
+            }
+        }
+
+        // ===== 面积与砖块 =====
+        var currentAreaMode = 'irregular';
+
+        function switchAreaMode(mode) {
+            var isIrregular = mode === 'irregular';
+            currentAreaMode = mode;
+            document.getElementById('btnAreaModeIrregular').classList.toggle('active', isIrregular);
+            document.getElementById('btnAreaModeRegular').classList.toggle('active', !isIrregular);
+            var irregularDiv = document.getElementById('area_mode_irregular');
+            var regularDiv = document.getElementById('area_mode_regular');
+            var sharedBlock = document.getElementById('area_shared_block');
+            var irregularBtns = document.getElementById('area_btns_irregular');
+            var regularBtns = document.getElementById('area_btns_regular');
+
+            if (isIrregular) {
+                if (regularDiv.style.display !== 'none') {
+                    regularDiv.classList.remove('mode-section-in');
+                    regularDiv.classList.add('mode-section-out');
+                    sharedBlock.classList.remove('mode-btn-up', 'mode-btn-down');
+                    sharedBlock.classList.add('mode-btn-up');
+                    setTimeout(function() {
+                        regularDiv.style.display = 'none';
+                        regularDiv.classList.remove('mode-section-out');
+                        var rInputs = ['p2r_long', 'p2r_short'];
+                        for (var i = 0; i < rInputs.length; i++) {
+                            var el = document.getElementById(rInputs[i]);
+                            if (el) { el.value = ''; updateClearButtonState(rInputs[i]); }
+                        }
+                        clearResult('res2_regular');
+                        irregularDiv.style.display = '';
+                        irregularDiv.classList.add('mode-section-in');
+                        irregularBtns.style.display = '';
+                        regularBtns.style.display = 'none';
+                        sharedBlock.classList.remove('mode-btn-up');
+                        sharedBlock.classList.add('mode-btn-down');
+                        setTimeout(function() {
+                            irregularDiv.classList.remove('mode-section-in');
+                            sharedBlock.classList.remove('mode-btn-down');
+                        }, 220);
+                    }, 220);
+                }
+            } else {
+                if (irregularDiv.style.display !== 'none') {
+                    irregularDiv.classList.remove('mode-section-in');
+                    irregularDiv.classList.add('mode-section-out');
+                    sharedBlock.classList.remove('mode-btn-up', 'mode-btn-down');
+                    sharedBlock.classList.add('mode-btn-down');
+                    setTimeout(function() {
+                        irregularDiv.style.display = 'none';
+                        irregularDiv.classList.remove('mode-section-out');
+                        var iInputs = ['p2_top_len', 'p2_bottom_len', 'p2_height'];
+                        for (var i = 0; i < iInputs.length; i++) {
+                            var el = document.getElementById(iInputs[i]);
+                            if (el) { el.value = ''; updateClearButtonState(iInputs[i]); }
+                        }
+                        clearResult('res2');
+                        regularDiv.style.display = '';
+                        regularDiv.classList.add('mode-section-in');
+                        regularBtns.style.display = '';
+                        irregularBtns.style.display = 'none';
+                        sharedBlock.classList.remove('mode-btn-down');
+                        sharedBlock.classList.add('mode-btn-up');
+                        setTimeout(function() {
+                            regularDiv.classList.remove('mode-section-in');
+                            sharedBlock.classList.remove('mode-btn-up');
+                        }, 220);
+                    }, 220);
+                }
+            }
+        }
+
+        function calcPage2() {
+            if (isAnimating) return;
+            var inputs = [
+                {id:'p2_top_len', name:'坡面上沿长度', req:true},
+                {id:'p2_bottom_len', name:'坡面下沿长度', req:true},
+                {id:'p2_height', name:'坡面垂直高度', req:true},
+                {id:'p2_brick_area', name:'单位砖块面积', req:false},
+                {id:'p2_bricks_per_unit', name:'单位砖块有几块砖', req:false}
+            ];
+            var values = {};
+            var missing = [];
+            for (var i = 0; i < inputs.length; i++) {
+                var item = inputs[i];
+                var el = document.getElementById(item.id);
+                var valStr = el.value.trim();
+                values[item.name] = valStr;
+                if (item.req && !valStr) missing.push(item.name);
+                if (valStr && parseFloat(valStr) === 0) {
+                    if (voiceEnabled) speakNumber(item.name + '不能为零');
+                    return renderError('res2', '"' + item.name + '"不能为零');
+                }
+            }
+            if (missing.length) {
+                if (voiceEnabled) speakNumber('请输入: ' + missing.join(', '));
+                return renderError('res2', '请输入: ' + missing.join(', '));
+            }
+
+            if (voiceEnabled) { speakNumber('开始计算'); setTimeout(function() { speakNumber('结果已显示'); }, 300); }
+
+            var top = parseFloat(document.getElementById('p2_top_len').value);
+            var bottom = parseFloat(document.getElementById('p2_bottom_len').value);
+            var height = parseFloat(document.getElementById('p2_height').value);
+            var brickArea = parseFloat(document.getElementById('p2_brick_area').value) || 0;
+            var bricksPerUnit = parseFloat(document.getElementById('p2_bricks_per_unit').value) || 1;
+
+            var area = (top + bottom) * height / 2;
+            var resVal = '坡面面积=' + area.toFixed(3) + '㎡';
+            if (brickArea > 0) {
+                resVal += '<br>需要砖块=' + Math.ceil(area / brickArea * bricksPerUnit) + '块';
+            }
+            renderResult('res2', '计算结果', formatColoredResult(resVal), values, 2);
+        }
+
+        function clearPage2() {
+            if (!isAnimating) {
+                animateInputClear(['p2_top_len', 'p2_bottom_len', 'p2_height', 'p2_brick_area', 'p2_bricks_per_unit']);
+                clearResult('res2');
+            }
+        }
+
+        function calcPage2Regular() {
+            if (isAnimating) return;
+            var inputs = [
+                {id:'p2r_long', name:'长边', req:true},
+                {id:'p2r_short', name:'短边', req:true},
+                {id:'p2_brick_area', name:'单位砖块面积', req:false},
+                {id:'p2_bricks_per_unit', name:'单位砖块有几块砖', req:false}
+            ];
+            var values = {};
+            var missing = [];
+            for (var i = 0; i < inputs.length; i++) {
+                var item = inputs[i];
+                var el = document.getElementById(item.id);
+                var valStr = el.value.trim();
+                values[item.name] = valStr;
+                if (item.req && !valStr) missing.push(item.name);
+                if (valStr && parseFloat(valStr) === 0) {
+                    if (voiceEnabled) speakNumber(item.name + '不能为零');
+                    return renderError('res2_regular', '"' + item.name + '"不能为零');
+                }
+            }
+            if (missing.length) {
+                if (voiceEnabled) speakNumber('请输入: ' + missing.join(', '));
+                return renderError('res2_regular', '请输入: ' + missing.join(', '));
+            }
+
+            if (voiceEnabled) { speakNumber('开始计算'); setTimeout(function() { speakNumber('结果已显示'); }, 300); }
+
+            var longEdge = parseFloat(document.getElementById('p2r_long').value);
+            var shortEdge = parseFloat(document.getElementById('p2r_short').value);
+            var brickArea = parseFloat(document.getElementById('p2_brick_area').value) || 0;
+            var bricksPerUnit = parseFloat(document.getElementById('p2_bricks_per_unit').value) || 1;
+
+            var area = longEdge * shortEdge;
+            var resVal = '坡面面积=' + area.toFixed(3) + '㎡';
+            if (brickArea > 0) {
+                resVal += '<br>需要砖块=' + Math.ceil(area / brickArea * bricksPerUnit) + '块';
+            }
+            renderResult('res2_regular', '计算结果', formatColoredResult(resVal), values, 2);
+        }
+
+        function clearPage2Regular() {
+            if (!isAnimating) {
+                animateInputClear(['p2r_long', 'p2r_short', 'p2_brick_area', 'p2_bricks_per_unit']);
+                clearResult('res2_regular');
+            }
+        }
+
+        // ===== 土方量计算 =====
+        function calcPage3() {
+            if (isAnimating) return;
+            var inputs = [
+                {id:'p3_top_len', name:'上平行边长度', req:true},
+                {id:'p3_bottom_len', name:'下平行边长度', req:true},
+                {id:'p3_h_len', name:'斜坡水平长度', req:true},
+                {id:'p3_v_height', name:'斜坡垂直高度', req:true}
+            ];
+            var values = {};
+            var missing = [];
+            for (var i = 0; i < inputs.length; i++) {
+                var item = inputs[i];
+                var el = document.getElementById(item.id);
+                var valStr = el.value.trim();
+                values[item.name] = valStr;
+                if (item.req && !valStr) missing.push(item.name);
+                if (valStr && parseFloat(valStr) === 0) {
+                    if (voiceEnabled) speakNumber(item.name + '不能为零');
+                    return renderError('res3', '"' + item.name + '"不能为零');
+                }
+            }
+            if (missing.length) {
+                if (voiceEnabled) speakNumber('请输入: ' + missing.join(', '));
+                return renderError('res3', '请输入: ' + missing.join(', '));
+            }
+
+            if (voiceEnabled) { speakNumber('开始计算'); setTimeout(function() { speakNumber('结果已显示'); }, 300); }
+
+            var topLen = parseFloat(document.getElementById('p3_top_len').value);
+            var bottomLen = parseFloat(document.getElementById('p3_bottom_len').value);
+            var hLen = parseFloat(document.getElementById('p3_h_len').value);
+            var vHeight = parseFloat(document.getElementById('p3_v_height').value);
+
+            var volume = ((2 * topLen + bottomLen) / 6 * hLen * vHeight + 3).toFixed(3);
+            var resVal = '土方量=' + volume + '立方米';
+            renderResult('res3', '计算结果', formatColoredResult(resVal), values, 3);
+        }
+
+        function clearPage3() {
+            if (!isAnimating) {
+                animateInputClear(['p3_top_len', 'p3_bottom_len', 'p3_h_len', 'p3_v_height']);
+                clearResult('res3');
+            }
+        }
+
+        // ===== 缓坡分段计算 =====
+        function calcPage4() {
+            if (isAnimating) return;
+            var inputs = [
+                {id:'p4_len', name:'缓坡长度', req:true},
+                {id:'p4_diff', name:'缓坡高度差', req:true}
+            ];
+            var isCountMode = document.getElementById('btnModeCount').classList.contains('active');
+            inputs.push({id: isCountMode ? 'p4_count' : 'p4_step', name: isCountMode ? '分为多少段' : '每段长度', req:true});
+
+            var values = {};
+            var missing = [];
+            for (var i = 0; i < inputs.length; i++) {
+                var item = inputs[i];
+                var el = document.getElementById(item.id);
+                var valStr = el.value.trim();
+                values[item.name] = valStr;
+                if (item.req && !valStr) missing.push(item.name);
+                if (valStr && parseFloat(valStr) === 0) {
+                    if (voiceEnabled) speakNumber(item.name + '不能为零');
+                    return renderError('res4', '"' + item.name + '"不能为零');
+                }
+            }
+            if (missing.length) {
+                if (voiceEnabled) speakNumber('请输入: ' + missing.join(', '));
+                return renderError('res4', '请输入: ' + missing.join(', '));
+            }
+
+            if (voiceEnabled) { speakNumber('开始计算'); setTimeout(function() { speakNumber('结果已显示'); }, 300); }
+
+            var len = parseFloat(document.getElementById('p4_len').value);
+            var diff = parseFloat(document.getElementById('p4_diff').value);
+
+            var resVal;
+            if (isCountMode) {
+                var count = parseFloat(document.getElementById('p4_count').value);
+                var segmentLen = (len / count).toFixed(3);
+                var segmentDiff = (diff / count).toFixed(3);
+                resVal = '坡一共分为' + formatNumber(count) + '段<br>每隔' + segmentLen + '米，抬高' + segmentDiff + '米';
+            } else {
+                var step = parseFloat(document.getElementById('p4_step').value);
+                var segmentCount = len / step;
+                var segmentDiff2 = (diff / segmentCount).toFixed(3);
+                resVal = '坡一共分为' + formatNumber(segmentCount) + '段<br>每隔' + formatNumber(step) + '米，抬高' + segmentDiff2 + '米';
+            }
+            renderResult('res4', '计算结果', formatColoredResult(resVal), values, 4);
+        }
+
+        function clearPage4() {
+            if (!isAnimating) {
+                animateInputClear(['p4_len', 'p4_diff', 'p4_count', 'p4_step']);
+                clearResult('res4');
+            }
+        }
+
+        function switchMode(mode) {
+            var isCount = mode === 'count';
+            document.getElementById('btnModeCount').classList.toggle('active', isCount);
+            document.getElementById('btnModeStep').classList.toggle('active', !isCount);
+            var countDiv = document.getElementById('mode_input_count');
+            var stepDiv = document.getElementById('mode_input_step');
+
+            if (isCount) {
+                if (!stepDiv.classList.contains('hidden')) {
+                    stepDiv.classList.add('mode-switch-out');
+                    setTimeout(function() {
+                        stepDiv.classList.add('hidden');
+                        stepDiv.classList.remove('mode-switch-out');
+                        document.getElementById('p4_step').value = '';
+                        updateClearButtonState('p4_step');
+                        countDiv.classList.remove('hidden');
+                        countDiv.classList.add('mode-switch-in');
+                        setTimeout(function() { countDiv.classList.remove('mode-switch-in'); }, 220);
+                    }, 220);
+                }
+            } else {
+                if (!countDiv.classList.contains('hidden')) {
+                    countDiv.classList.add('mode-switch-out');
+                    setTimeout(function() {
+                        countDiv.classList.add('hidden');
+                        countDiv.classList.remove('mode-switch-out');
+                        document.getElementById('p4_count').value = '';
+                        updateClearButtonState('p4_count');
+                        stepDiv.classList.remove('hidden');
+                        stepDiv.classList.add('mode-switch-in');
+                        setTimeout(function() { stepDiv.classList.remove('mode-switch-in'); }, 220);
+                    }, 220);
+                }
+            }
+        }
+
+        // 字符转换为中文
+        function convertCharToChinese(char) {
+            var digits = {'0':'零','1':'一','2':'二','3':'三','4':'四','5':'五','6':'六','7':'七','8':'八','9':'九'};
+            if (char === '.') return '点';
+            return digits[char] || char;
+        }
+
+        // ===== 初始化 =====
+        function initApp() {
+            // 缓存 DOM 引用
+            cacheDOM();
+
+            // TTS 可用性自检（不发声检测 TTSBridge + AudioContext）
+            checkTTSAvailability();
+
+            var pages = DOM.pages;
+            for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
+            document.getElementById('page1').classList.add('active');
+            updateHeader(1);
+
+            vibrateEnabled = false;
+
+            attachAllEventListeners();
+
+            var clearBtns = document.querySelectorAll('.clear-btn');
+            for (var j = 0; j < clearBtns.length; j++) {
+                var inputId = clearBtns[j].id.replace('_clear', '');
+                updateClearButtonState(inputId);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+
+    </script>
+
+    <script>
+    /* ===== 首页按钮 & 导航按钮点击回弹 ===== */
+    (function(){
+        function bounce(el,cls){
+            el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);
+            setTimeout(function(){el.classList.remove(cls)},400);
+        }
+        var navBtns = document.querySelectorAll('.nav-btn-main');
+        for (var i = 0; i < navBtns.length; i++) {
+            (function(b){b.addEventListener('click',function(){bounce(this,'nb-click')});})(navBtns[i]);
+        }
+    })();
+    </script>
+</body>
+</html>
